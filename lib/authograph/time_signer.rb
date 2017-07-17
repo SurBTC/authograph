@@ -76,9 +76,8 @@ module Authograph
     end
 
     def calc_signature(_request, _key_secret)
-      signature = OpenSSL::HMAC.hexdigest(@digest, _key_secret, build_payload(_request))
-      # "HMAC-#{@digest.upcase} #{[signature].pack('m0')}"
-      "HMAC-#{@digest.upcase} #{signature}"
+      signature = OpenSSL::HMAC.digest(@digest, _key_secret, build_payload(_request))
+      "HMAC-#{@digest.upcase} #{[signature].pack('m0')}"
     end
 
     def build_payload(_request)
@@ -92,7 +91,7 @@ module Authograph
 
       # extra headers to be considered
       @signed_headers.each { |h| parts << (_request.get_header(h) || '') }
-      parts.join ','
+      parts.join "\n"
     end
 
     def body_md5(_request)
