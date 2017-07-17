@@ -87,10 +87,13 @@ module Authograph
     def build_payload(_request)
       parts = [
         _request.method,
-        _request.path,
-        _request.content_type || '',
-        body_md5(_request)
+        _request.path
       ]
+
+      if %w[POST PUT].include?(_request.method)
+        parts << _request.content_type || ''
+        parts << body_md5(_request)
+      end
 
       # extra headers to be considered
       @sign_headers.each { |h| parts << (_request.get_header(h) || '') }
@@ -98,11 +101,7 @@ module Authograph
     end
 
     def body_md5(_request)
-      if %w[POST PUT].include?(_request.method)
-        Digest::MD5.base64digest _request.body
-      else
-        ''
-      end
+      Digest::MD5.base64digest _request.body
     end
   end
 end
