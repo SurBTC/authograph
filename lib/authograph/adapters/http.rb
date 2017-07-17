@@ -25,10 +25,15 @@ module Authograph::Adapters
     end
 
     def body
-      return '' unless @request.body_stream
-      data = @request.body_stream.read
-      @request.body_stream.rewind
-      data
+      if !@request.body_stream.nil?
+        data = @request.body_stream.read
+        @request.body_stream.rewind
+        data
+      elsif !@request.body.nil?
+        @request.body
+      else
+        ''
+      end
     end
   end
 end
