@@ -1,5 +1,5 @@
 module Authograph::Adapters
-  class Http
+  class Http < Base
     def initialize(_request)
       @request = _request
     end

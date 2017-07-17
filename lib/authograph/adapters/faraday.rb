@@ -1,5 +1,5 @@
 module Authograph::Adapters
-  class Faraday
+  class Faraday < Base
     def initialize(_request)
       @request = _request
     end

@@ -1,4 +1,5 @@
 require "authograph/version"
+require "authograph/adapters/base"
 require "authograph/time_signer"
 
 module Authograph

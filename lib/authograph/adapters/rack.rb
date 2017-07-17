@@ -1,5 +1,5 @@
 module Authograph::Adapters
-  class Rack
+  class Rack < Base
     def initialize(_request)
       @request = _request
     end

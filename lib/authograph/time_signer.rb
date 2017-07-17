@@ -36,6 +36,8 @@ module Authograph
     private
 
     def adapt(_request) # rubocop:disable Metrics/MethodLength
+      return _request if _request.is_a? Adapters::Base
+
       case _request.class.to_s
       when 'ActionDispatch::Request'
         require 'authograph/adapters/rack'
