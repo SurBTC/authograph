@@ -1,10 +1,10 @@
 require 'spec_helper'
 
-describe Authograph::TimeSigner do
+describe Authograph::Signer do
   let!(:time) { Time.now } # stop spec time
 
   let(:signed_headers) { [] }
-  let(:signer) { described_class.new(signed_headers: signed_headers) }
+  let(:signer) { described_class.new(sign_headers: signed_headers) }
 
   # request parameters
   let(:adapter) { Class.new(Authograph::Adapters::Base).new }
@@ -30,7 +30,7 @@ describe Authograph::TimeSigner do
       [OpenSSL::HMAC.digest(
         'sha384',
         secret,
-        "#{method}\n#{path}\n#{httptime}\n#{content_type}\n#{body}"
+        "#{method}\n#{path}\n#{content_type}\n#{body}\n#{httptime}"
       )].pack('m0')
   end
 

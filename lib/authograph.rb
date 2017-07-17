@@ -1,9 +1,9 @@
 require "authograph/version"
 require "authograph/adapters/base"
-require "authograph/time_signer"
+require "authograph/signer"
 
 module Authograph
-  def self.time_signer(*_args)
-    TimeSigner.new(*_args)
+  def self.signer(*_args)
+    Signer.new(*_args)
   end
 end

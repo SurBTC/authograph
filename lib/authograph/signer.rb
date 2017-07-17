@@ -1,26 +1,30 @@
 module Authograph
-  class TimeSigner
-    DEFAULT_AUTH_HEADER = 'X-Signature'
+  class Signer
+    DEFAULT_SIGN_HEADER = 'X-Signature'
     DEFAULT_DATE_HEADER = 'X-Date'
 
     def initialize(
       digest: 'sha384',
-      clock_skew: 600,
-      auth_header: nil,
-      date_header: nil,
-      signed_headers: []
+      header: DEFAULT_SIGN_HEADER,
+      sign_headers: [],
+      sign_date: true,
+      date_header: DEFAULT_DATE_HEADER,
+      date_max_skew: 600
     )
       @digest = digest
-      @clock_skew = clock_skew
-      @auth_header = auth_header || DEFAULT_AUTH_HEADER
-      @date_header = date_header || DEFAULT_DATE_HEADER
-      @signed_headers = signed_headers
+      @header = header
+      @sign_headers = sign_headers
+
+      @sign_date = sign_date
+      @date_header = date_header
+      @date_max_skew = date_max_skew
+      @sign_headers << date_header if sign_date # ensure date header is signed too
     end
 
     def sign(_request, _key_secret)
       _request = adapt _request
 
-      set_request_date(_request)
+      set_request_date(_request) if @sign_date
       # TODO: set_hashed_content to discard invalid signatures before checking content?
       set_request_authorization(_request, _key_secret)
     end
@@ -29,7 +33,7 @@ module Authograph
       _request = adapt _request
 
       return false if !signatures_match? _request, _key_secret
-      return false if !request_within_time_window? _request
+      return false if @sign_date && !request_within_time_window?(_request)
       true
     end
 
@@ -61,16 +65,16 @@ module Authograph
     end
 
     def set_request_authorization(_request, _key_secret)
-      _request.set_header @auth_header, calc_signature(_request, _key_secret)
+      _request.set_header @header, calc_signature(_request, _key_secret)
     end
 
     def signatures_match?(_request, _key_secret)
-      calc_signature(_request, _key_secret) == _request.get_header(@auth_header)
+      calc_signature(_request, _key_secret) == _request.get_header(@header)
     end
 
     def request_within_time_window?(_request)
       request_date = Time.httpdate(_request.get_header(@date_header)).utc
-      request_date > (Time.now.utc - @clock_skew) && request_date < (Time.now.utc + @clock_skew)
+      (request_date - Time.now.utc).abs <= @date_max_skew
     rescue ArgumentError
       false
     end
@@ -84,13 +88,12 @@ module Authograph
       parts = [
         _request.method,
         _request.path,
-        _request.get_header(@date_header) || '',
         _request.content_type || '',
         body_md5(_request)
       ]
 
       # extra headers to be considered
-      @signed_headers.each { |h| parts << (_request.get_header(h) || '') }
+      @sign_headers.each { |h| parts << (_request.get_header(h) || '') }
       parts.join "\n"
     end
 
