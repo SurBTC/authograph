@@ -44,7 +44,6 @@ Yo can later validate the request by using `authentic?`
 signer.authentic?(my_request, my_secret) # this will check the signature and the date by default
 ```
 
-
 ### Signer options
 
 **IMPORTANT** Remember to always configure both the signer-signer and the validator-signer using the same paremeters.
@@ -58,6 +57,23 @@ The following parameters are available when calling `Authograph.signer`:
 * `date_header`: header key to store date in (`'X-Date'` by default).
 * `date_max_skew`: maximum difference (in secs) between request time and validaton (`'600'` by default).
 
+### Testing (only rspec)
+
+Sometimes is useful to stub the signing process on tests.
+
+Make sure to include the rspec extensions on your `spec_helper.rb`:
+
+```ruby
+require 'authograph/rspec'
+```
+
+Now you can call the `stub_authograph` inside your tests:
+
+```ruby
+before { stub_authograph(:any, 'mysignature') } }
+before { stub_authograph({ secret: 'my_secret' }, 'mysignature') } # only stub signatures for a given secret (TODO)
+before { stub_authograph({ path: '/my/path' }, 'mysignature') } # only stub signatures for a given path (TODO)
+```
 
 ### Generated signature structure
 
