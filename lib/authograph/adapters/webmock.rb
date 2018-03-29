@@ -1,5 +1,5 @@
 module Authograph::Adapters
-  class Faraday < Base
+  class Webmock < Base
     def initialize(_request)
       @request = _request
     end
@@ -9,7 +9,7 @@ module Authograph::Adapters
     end
 
     def set_header(_header, _value)
-      @request.headers[_header] = _value
+      raise 'not implemented'
     end
 
     def method
@@ -17,13 +17,11 @@ module Authograph::Adapters
     end
 
     def path
-      uri = URI(@request.path)
-      uri.query = ::Faraday::Utils.build_query(@request.params) unless @request.params.empty?
-      uri.request_uri
+      @request.uri.request_uri
     end
 
     def content_type
-      @request.headers['Content-Type'] || 'application/x-www-form-urlencoded'
+      get_header('Content-Type') || ''
     end
 
     def body
